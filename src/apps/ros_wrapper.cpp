@@ -21,6 +21,7 @@
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
 
+#define MII_CTRL_THREAD ("mii_control")
 #define ROS_CTRL_THREAD ("ros_control")
 #define RT_PUB_THREAD   ("rt_publisher")
 
@@ -118,6 +119,9 @@ bool RosWrapper::start() {
     MiiCfgReader::instance()->add_config(str);
     if (nullptr == qr_control::MiiControl::create_instance("qr.control"))
       LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
+
+    ThreadPool::instance()->add(MII_CTRL_THREAD, &qr_control::MiiControl::tick,
+        qr_control::MiiControl::instance());
   }
 
   double frequency = 50.0;
