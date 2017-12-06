@@ -14,6 +14,9 @@
 #include "foundation/cfg_reader.h"
 #include "system/platform/thread/threadpool.h"
 
+///! qr-next-control
+#include <mii_control.h>
+
 #include <std_msgs/Int32MultiArray.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Imu.h>
@@ -33,7 +36,7 @@ RosWrapper* RosWrapper::create_instance(const MiiString& __tag) {
 }
 
 RosWrapper::RosWrapper(const MiiString& __tag)
-  : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(false),
+  : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
     rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false) {
   // LOG_DEBUG << "Enter the roswrapper construction";
   // google::InitGoogleLogging("qr_driver");
@@ -65,7 +68,7 @@ void RosWrapper::create_system_instance() {
     LOG_FATAL << "Create the singleton 'MiiCfgReader' has failed.";
 
   if (!ros::param::get("~library", str)) {
-    LOG_FATAL << "RosWapper can't find the 'configure' parameter "
+    LOG_FATAL << "RosWapper can't find the 'library' parameter "
         << "in the parameter server. Did you forget define this parameter.";
   }
   LOG_DEBUG << str;
@@ -92,18 +95,31 @@ bool RosWrapper::start() {
     controller_manager_.reset(
         new controller_manager::ControllerManager(
             hardware_interface_.get(), nh_));
-  }
 
-  alive_ = true;
-  if (use_ros_control_) {
     double frequency = 100.0;
     ros::param::get("~ctrl_loop_frequency", frequency);
     if (frequency > 0)
       ros_ctrl_duration_ = std::chrono::milliseconds((int)(1000.0 / frequency));
 
     ThreadPool::instance()->add(ROS_CTRL_THREAD, &RosWrapper::rosControlLoop, this);
+  } else {
+    // Use the MII Control
+    MiiString str;
+    if (!ros::param::get("~gait_lib", str)) {
+      LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
+          << "in the parameter server. Did you forget define this parameter.";
+    }
+    AutoInstanceor::instance()->add_library(str);
+
+    if (!ros::param::get("~gait_cfg", str)) {
+      LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
+          << "in the parameter server. Did you forget define this parameter.";
+    }
+    MiiCfgReader::instance()->add_config(str);
+    if (nullptr == qr_control::MiiControl::create_instance("qr.control"))
+      LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
   }
-  
+
   double frequency = 50.0;
   ros::param::get("~rt_frequency", frequency);
   if (frequency > 0)
@@ -116,9 +132,8 @@ bool RosWrapper::start() {
   cmd_sub_ = nh_.subscribe<std_msgs::Int32>("debug", 100,
       &RosWrapper::cbForDebug, this);
 #endif
-  bool ret = MiiRobot::start();
-  // LOG_DEBUG << "==========RosWrapper::start==========>>";
-  return ret;
+
+  return MiiRobot::start();
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {

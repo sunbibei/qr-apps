@@ -150,7 +150,7 @@
 	<!-- User Layer -->
 	<wrapper>
 		<!-- The necessary parameters are asked by MiiRobot -->
-		<robot control="true" frequency="50">
+		<robot mii_control="true" frequency="50">
 			<joints     labels="qr.res.fl.yaw qr.res.fl.hip qr.res.fl.knee
 												  qr.res.hl.yaw qr.res.hl.hip qr.res.hl.knee
 												  qr.res.fr.yaw qr.res.fr.hip qr.res.fr.knee
@@ -169,5 +169,9 @@
 			<imu         label="qr.res.imu"   name="imu"   frame_id="body" />
 		</roswrapper>
 	</wrapper>
+
+	<control frequency="50" >
+		<creep gait="qr_control::Creep" />
+	</control>
 
 </qr>

@@ -64,6 +64,7 @@ target_link_libraries(${PROJECT_NAME}_test_lib
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   qr_driver_sys_robot
+  qr_next_control_framwork
 )
 
 #############
