@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
   ros::waitForShutdown();
 
   RosWrapper::destroy_instance();
+  Label::printfEveryInstance();
   LOG_INFO << "The shutdown of qr_driver has finished... ...";
   // google::ShutdownGoogleLogging();
   return 0;

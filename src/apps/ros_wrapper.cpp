@@ -53,6 +53,7 @@ RosWrapper::~RosWrapper() {
   halt();
   // AutoInstanceor::destroy_instance();
   MiiCfgReader::destroy_instance();
+  qr_control::MiiControl::instance()->destroy_instance();
   // LOG_DEBUG << "Leave the roswrapper deconstruction";
   // google::ShutdownGoogleLogging();
 }
@@ -117,7 +118,9 @@ bool RosWrapper::start() {
           << "in the parameter server. Did you forget define this parameter.";
     }
     MiiCfgReader::instance()->add_config(str);
-    if (nullptr == qr_control::MiiControl::create_instance("qr.control"))
+
+    if ((nullptr == qr_control::MiiControl::create_instance("control"))
+        || !qr_control::MiiControl::instance()->init())
       LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
 
     ThreadPool::instance()->add(MII_CTRL_THREAD, &qr_control::MiiControl::tick,
