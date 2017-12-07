@@ -119,7 +119,7 @@ bool RosWrapper::start() {
     }
     MiiCfgReader::instance()->add_config(str);
 
-    if ((nullptr == qr_control::MiiControl::create_instance("control"))
+    if ((nullptr == qr_control::MiiControl::create_instance("ctrl"))
         || !qr_control::MiiControl::instance()->init())
       LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
 
