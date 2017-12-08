@@ -82,15 +82,16 @@ void RosWrapper::create_system_instance() {
 }
 
 bool RosWrapper::start() {
-  if (!init()) LOG_FATAL << "Robot initializes fail!";
-
-  LOG_INFO << "MiiRobot initialization has completed.";
   bool debug = false;
   ros::param::get("~debug", debug);
   google::SetStderrLogging(debug ?
       google::GLOG_INFO : google::GLOG_WARNING);
-
   ros::param::get("~use_ros_control", use_ros_control_);
+
+  if (!init(!use_ros_control_)) LOG_FATAL << "Robot initializes fail!";
+
+  LOG_INFO << "MiiRobot initialization has completed.";
+
   if (use_ros_control_) {
     hardware_interface_.reset(
               new RosRobotHW(nh_, Label::make_label(root_tag_, "roswrapper")));
