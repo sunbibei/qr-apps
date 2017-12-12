@@ -44,6 +44,8 @@ set(BIN_FILES           ${SRC_ROOT}/main.cpp
 )
 
 set(EX_FILES            ${SRC_EXAMPLES}/qr_driver_test.cpp
+                        ${SRC_EXAMPLES}/qr_driver_test2.cpp
+                        ${SRC_EXAMPLES}/qr_driver_test3.cpp
 )
 
 ## Declare a C++ library

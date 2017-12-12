@@ -12,9 +12,6 @@ QrDriverTestController::~QrDriverTestController() {
 
 }
 
-/**************************************************************************
-   Description: initialize joints from robot_description
-**************************************************************************/
 bool QrDriverTestController::init(RobotHW* robot, ros::NodeHandle &n) {
     int count = 0;
     PositionJointInterface* iface = robot->get<PositionJointInterface>();
@@ -60,19 +57,11 @@ void QrDriverTestController::cbForReset(const std_msgs::BoolConstPtr& msg) {
   is_control_ = msg->data;
 }
 
-/**************************************************************************
-   Author: WangShanren
-   Date: 2017.2.22
-   Description: set model initial state
-**************************************************************************/
+
 void QrDriverTestController::starting(const ros::Time& time) {
 
 }
-/**************************************************************************
-   Author: WangShanren
-   Date: 2017.2.22
-   Description: design state meachine: Adjust CoG <---> Switch Swing Leg
-**************************************************************************/
+
 void QrDriverTestController::update(const ros::Time&, const ros::Duration&) {
   // if (!is_control_) return;
   // is_control_ = false;
