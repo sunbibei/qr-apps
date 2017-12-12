@@ -25,7 +25,7 @@ public:
   QrDriverTestController3();
   ~QrDriverTestController3();
 
-  bool init(hardware_interface::RobotHW* robot, ros::NodeHandle &n);
+  bool init(hardware_interface::PositionJointInterface* robot, ros::NodeHandle &n);
   void starting(const ros::Time& time);
   void update(const ros::Time& time, const ros::Duration& period);
 

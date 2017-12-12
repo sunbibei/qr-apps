@@ -250,7 +250,8 @@ void RosWrapper::rosControlLoop() {
     controller_manager_->update(ros::Time::now(), elapsed_time);
     last_time = current_time;
     // Output
-    hardware_interface_->write();
+    if (JntCmdType::CMD_POS_VEL != jnt_manager_->getJointCommandMode())
+      hardware_interface_->write();
 
     TIMER_CONTROL(ros_ctrl_duration_)
   }

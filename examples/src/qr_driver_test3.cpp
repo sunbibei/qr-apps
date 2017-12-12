@@ -4,6 +4,11 @@
 
 namespace qr_driver_test {
 
+static double _s_init_value[] = {1.1452, -0.5471, 3.00415,
+                                 0.2453, -2.3457, 2.24567,
+                                 -2.3542, 1.1324, -1.5789,
+                                 1.2457, -0.4681, -2.3546};
+
 QrDriverTestController3::QrDriverTestController3() :
   is_control_(false), imu_handle_(nullptr),
   imu_ang_vel_(nullptr), imu_lin_acc_(nullptr), imu_quat_(nullptr) {
@@ -16,7 +21,7 @@ QrDriverTestController3::~QrDriverTestController3() {
 /**************************************************************************
    Description: initialize joints from robot_description
 **************************************************************************/
-bool QrDriverTestController3::init(hardware_interface::RobotHW*, ros::NodeHandle &n) {
+bool QrDriverTestController3::init(hardware_interface::PositionJointInterface*, ros::NodeHandle &n) {
 
   auto jnt_manager = middleware::JointManager::instance();
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR})
@@ -50,7 +55,7 @@ bool QrDriverTestController3::init(hardware_interface::RobotHW*, ros::NodeHandle
   }
 
   __initAllofData();
-  reset_sub_ = n.subscribe<std_msgs::Bool>("QrDriverTest2", 1,
+  reset_sub_ = n.subscribe<std_msgs::Bool>("QrDriverTest3", 1,
      &QrDriverTestController3::cbForReset, this);
   return true;
 }
@@ -90,21 +95,11 @@ void QrDriverTestController3::update(const ros::Time&, const ros::Duration&) {
   if (!is_control_) return;
   is_control_ = false;
 
-  static double init_value[] = {1.1452, -0.5471, 3.00415,
-                                0.2453, -2.3457, 2.24567,
-                                -2.3542, 1.1324, -1.5789,
-                                1.2457, -0.4681, -2.3546};
-  for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    // The first value is position command, and the second value is velocity command.
-    joint_handles_[i]->updateJointCommand(init_value[i] + 0.0001*i, 0.88*i);
-  }
-  std::cout << std::endl;
-
-  std::cout << "JointStates: ";
+  std::cout << "JointStates: \n";
   for (const auto& leg : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
     for (const auto& jnt : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
-      int idx = leg*LegType::N_LEGS+jnt;
-      printf("[%d] - (%d): %04f %04f %04f\n", leg, jnt,
+      int idx = leg*JntType::N_JNTS+jnt;
+      printf("[%d] - (%d): %+04f, %+04f, %+04f\n", leg, jnt,
           *(jnt_poss_[idx]), *(jnt_vels_[idx]), *(jnt_tors_[idx]));
     }
   }
@@ -118,7 +113,7 @@ void QrDriverTestController3::update(const ros::Time&, const ros::Duration&) {
 
   if (imu_handle_) {
     ; // Output the information of IMU
-    std::cout << "ImuSensor:   " << std::endl;
+    std::cout << "ImuSensor:" << std::endl;
     auto d = imu_ang_vel_;
     std::cout << d[0] << " " << d[1] << " " << d[2] << std::endl;
     d = imu_lin_acc_;
@@ -126,6 +121,16 @@ void QrDriverTestController3::update(const ros::Time&, const ros::Duration&) {
     d = imu_quat_;
     std::cout << d[0] << " " << d[1] << " " << d[2] << " " << d[3] << std::endl;
   }
+
+
+  std::cout << "JointCommand: " << std::endl;
+  for (size_t i = 0; i < joint_handles_.size(); ++i) {
+    printf("[%d] - (%d): %+01.04f %+01.04f\n", joint_handles_[i]->owner_type(),
+      joint_handles_[i]->joint_type(), _s_init_value[i] + 0.0001*i, 0.88*i);
+    // The first value is position command, and the second value is velocity command.
+    joint_handles_[i]->updateJointCommand(_s_init_value[i] + 0.0001*i, 0.88*i);
+  }
+  std::cout << std::endl;
 }
 
 } /* end namespace qr_driver_test */
