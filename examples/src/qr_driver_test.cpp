@@ -78,14 +78,17 @@ void QrDriverTestController::update(const ros::Time&, const ros::Duration&) {
   std::cout << std::endl;
   // return;
 
-  std::cout << "JointStates: ";
+  std::cout << "JointStates:";
+  int count = 0;
   for (const auto& j : joint_handles_) {
-    printf("%04f ", j.getPosition());
+    if (0 == count++%3)
+      printf("\n");
+
+    printf("%+04f ", j.getPosition());
   }
   std::cout << std::endl;
 
   std::cout << "ForceSensor: ";
-
   for (const auto& f : td_handles_) {
     printf("%04f ", *(f.getForce()));
   }
