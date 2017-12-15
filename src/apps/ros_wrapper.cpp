@@ -271,10 +271,10 @@ void RosWrapper::halt() {
 
 #ifdef DEBUG_TOPIC
 void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
-  auto jnt = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
+  auto jnt = jnt_manager_->getJointHandle(LegType::HL, JntType::KNEE);
   LOG_INFO << "Jnt: " << jnt->joint_name();
   // double limits[] = {-0.15, 0.75};
-  double limits[] = {0, 0.5};
+  double limits[] = {0.7, 1.5};
   MiiString type = "square";
 
   // std::vector<double> _y;
