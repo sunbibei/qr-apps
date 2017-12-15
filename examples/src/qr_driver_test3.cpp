@@ -125,7 +125,7 @@ void QrDriverTestController3::update(const ros::Time&, const ros::Duration&) {
 
   std::cout << "JointCommand: " << std::endl;
   for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    printf("[%d] - (%d): %+01.04f %+01.04f\n", joint_handles_[i]->owner_type(),
+    printf("[%d] - (%d): %+01.04f %+01.04f\n", joint_handles_[i]->leg_type(),
       joint_handles_[i]->joint_type(), _s_init_value[i] + 0.0001*i, 0.88*i);
     // The first value is position command, and the second value is velocity command.
     joint_handles_[i]->updateJointCommand(_s_init_value[i] + 0.0001*i, 0.88*i);
