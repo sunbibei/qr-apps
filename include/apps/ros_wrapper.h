@@ -10,7 +10,7 @@
 
 #include <chrono>
 #include <ros/ros.h>
-#include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <controller_manager/controller_manager.h>
 
 #include "system/robot/mii_robot.h"
@@ -36,7 +36,7 @@ private:
   void rosControlLoop();
   // Just for test
 #ifdef DEBUG_TOPIC
-  void cbForDebug(const std_msgs::Int32ConstPtr&);
+  void cbForDebug(const std_msgs::Float32ConstPtr&);
   ros::Subscriber cmd_sub_;
 #endif
 

@@ -163,7 +163,7 @@ void RosRobotHW::write() {
       jnt->updateJointCommand(*jnt_vel_cmds_[jnt->joint_name()]);
   } else if (position_interface_running_) {
     for (auto& jnt : *jnt_manager_)
-      jnt->updateJointCommand(*jnt_pos_cmds_[jnt->joint_name()]);
+      ;//jnt->updateJointCommand(*jnt_pos_cmds_[jnt->joint_name()]);
   } else if (effort_interface_running_) {
     LOG_WARNING << "NO IMPLEMENTES"; // Nothing to do here
   } else {

@@ -53,7 +53,6 @@ RosWrapper::~RosWrapper() {
   halt();
   // AutoInstanceor::destroy_instance();
   MiiCfgReader::destroy_instance();
-  qr_control::MiiControl::instance()->destroy_instance();
   // LOG_DEBUG << "Leave the roswrapper deconstruction";
   // google::ShutdownGoogleLogging();
 }
@@ -86,8 +85,8 @@ bool RosWrapper::start() {
   ros::param::get("~debug", debug);
   google::SetStderrLogging(debug ?
       google::GLOG_INFO : google::GLOG_WARNING);
-  ros::param::get("~use_ros_control", use_ros_control_);
 
+  ros::param::get("~use_ros_control", use_ros_control_);
   if (!init(!use_ros_control_)) LOG_FATAL << "Robot initializes fail!";
 
   LOG_INFO << "MiiRobot initialization has completed.";
@@ -137,7 +136,7 @@ bool RosWrapper::start() {
 
   // For debug
 #ifdef DEBUG_TOPIC
-  cmd_sub_ = nh_.subscribe<std_msgs::Int32>("debug", 100,
+  cmd_sub_ = nh_.subscribe<std_msgs::Float32>("debug", 100,
       &RosWrapper::cbForDebug, this);
 #endif
 
@@ -262,16 +261,55 @@ void RosWrapper::rosControlLoop() {
 void RosWrapper::halt() {
   alive_ = false;
 
-  controller_manager_.reset();
-  hardware_interface_.reset();
+  if (!use_ros_control_) {
+    controller_manager_.reset();
+    hardware_interface_.reset();
+  } else {
+    qr_control::MiiControl::instance()->destroy_instance();
+  }
 }
 
 #ifdef DEBUG_TOPIC
-void RosWrapper::cbForDebug(const std_msgs::Int32ConstPtr& msg) {
-  for (auto& jnt : *jnt_manager_) {
+void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
+  auto jnt = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
+  LOG_INFO << "Jnt: " << jnt->joint_name();
+  // double limits[] = {-0.15, 0.75};
+  double limits[] = {0, 0.5};
+  MiiString type = "square";
+
+  // std::vector<double> _y;
+  // _y.reserve(512);
+  jnt->updateJointCommand(limits[1]);
+  LOG_INFO << "Go to initialize position.";
+  sleep(2);
+
+  ///! sin
+  if (0 == type.compare("sin")) {
+    for (double _x = 0; _x < 3.14; _x += 0.01) {
+      // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
+      double tmp = (limits[1] - limits[0])*sin(_x) + limits[0];
+      jnt->updateJointCommand(tmp);
+      LOG_INFO << "Add the target: " << tmp;
+      std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
+      //return;
+    }
+  } else if (0 == type.compare("linear")) {
+    ;
+  } else if (0 == type.compare("phase")) {
+    ;
+  } else if (0 == type.compare("square")) {
+    for (int i = 0; i < (int)msg->data; ++i) {
+      jnt->updateJointCommand(limits[i%2]);
+      std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+  } else {
+    ;
+  }
+
+  /*for (auto& jnt : *jnt_manager_) {
     // LOG_DEBUG << "Joint " << jnt->joint_name() << " adds the command " << msg->data;
     jnt->updateJointCommand(msg->data);
-  }
+  }*/
   // 实现方式0
   /*LOG_INFO << "test write style 0";
   for (auto& jnt : robot_->jnt_names_) {
@@ -298,6 +336,6 @@ void RosWrapper::cbForDebug(const std_msgs::Int32ConstPtr& msg) {
   }
   robot_->addCommand(cmd_name, cmd_vec);*/
 
-  LOG_INFO << "Add Command Successful";
+  LOG_INFO << "Debug Callback Completed!";
 }
 #endif
