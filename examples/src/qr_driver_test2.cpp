@@ -82,7 +82,7 @@ void QrDriverTestController2::update(const ros::Time&, const ros::Duration&) {
 
   std::cout << "JointStates: \n";
   for (const auto& j : joint_handles_) {
-    printf("[%d] - (%d): %+04f, %+04f, %+04f\n", j->owner_type(), j->joint_type(),
+    printf("[%d] - (%d): %+04f, %+04f, %+04f\n", j->leg_type(), j->joint_type(),
         j->joint_position(), j->joint_velocity(), j->joint_torque());
   }
   std::cout << std::endl;
@@ -106,7 +106,7 @@ void QrDriverTestController2::update(const ros::Time&, const ros::Duration&) {
 
   std::cout << "JointCommand: \n";
   for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    printf("[%d] - (%d): %+01.04f %+01.04f\n", joint_handles_[i]->owner_type(),
+    printf("[%d] - (%d): %+01.04f %+01.04f\n", joint_handles_[i]->leg_type(),
       joint_handles_[i]->joint_type(), i*0.01, 0.88);
 
     joint_handles_[i]->updateJointCommand(i*0.01, 0.88);
