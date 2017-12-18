@@ -271,15 +271,15 @@ void RosWrapper::halt() {
 
 #ifdef DEBUG_TOPIC
 void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
-  auto jnt = jnt_manager_->getJointHandle(LegType::FL, JntType::HIP);
+  auto jnt = jnt_manager_->getJointHandle(LegType::HL, JntType::KNEE);
   LOG_INFO << "Jnt: " << jnt->joint_name();
   // double limits[] = {-0.15, 0.75};
-  double limits[] = {0, 0.5};
-  MiiString type = "square";
+  double limits[] = {0.8, 1.5};
+  MiiString type = "quadratic";
 
   // std::vector<double> _y;
   // _y.reserve(512);
-  jnt->updateJointCommand(limits[1]);
+  jnt->updateJointCommand(limits[0]);
   LOG_INFO << "Go to initialize position.";
   sleep(2);
 
@@ -294,13 +294,29 @@ void RosWrapper::cbForDebug(const std_msgs::Float32ConstPtr& msg) {
       //return;
     }
   } else if (0 == type.compare("linear")) {
-    ;
+    for (double _x = 0; _x < 1; _x += 0.01) {
+      // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
+      double tmp = (limits[1] - limits[0])*_x + limits[0];
+      jnt->updateJointCommand(tmp);
+      LOG_INFO << "Add the target: " << tmp;
+      std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
+      //return;
+    }
+  } else if (0 == type.compare("quadratic")) {
+    for (double _x = 0; _x < 1; _x += 0.01) {
+      // _y.push_back((limits[1] - limits[0])*sin(_x) + limits[0]);
+      double tmp = (limits[1] - limits[0])*_x*_x + limits[0];
+      jnt->updateJointCommand(tmp);
+      LOG_INFO << "Add the target: " << tmp;
+      std::this_thread::sleep_for(std::chrono:: milliseconds((int)msg->data));
+      //return;
+    }
   } else if (0 == type.compare("phase")) {
     ;
   } else if (0 == type.compare("square")) {
     for (int i = 0; i < (int)msg->data; ++i) {
       jnt->updateJointCommand(limits[i%2]);
-      std::this_thread::sleep_for(std::chrono::seconds(3));
+      std::this_thread::sleep_for(std::chrono::seconds(4));
     }
   } else {
     ;
