@@ -144,10 +144,12 @@ bool RosWrapper::start() {
 }
 
 inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
+  to.name.clear();
   to.position.clear();
   to.velocity.clear();
   to.effort.clear();
   for (const auto& jnt : *from) {
+    to.name.push_back(jnt->joint_name());
     to.position.push_back(jnt->joint_position());
     to.velocity.push_back(jnt->joint_velocity());
     to.effort.push_back(jnt->joint_torque());
@@ -195,7 +197,7 @@ void RosWrapper::publishRTMsg() {
   sensor_msgs::JointState   __jnt_msg;
   sensor_msgs::Imu          __imu_msg;
   std_msgs::Int32MultiArray __f_msg;
-  getJointNames(__jnt_msg.name);
+  // getJointNames(__jnt_msg.name);
 
   __imu_msg.header.frame_id = "imu";
 

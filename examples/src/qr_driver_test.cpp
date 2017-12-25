@@ -71,11 +71,11 @@ void QrDriverTestController::update(const ros::Time&, const ros::Duration&) {
                                 0.2453, -2.3457, 2.24567,
                                 -2.3542, 1.1324, -1.5789,
                                 1.2457, -0.4681, -2.3546};
-  for (size_t i = 0; i < joint_handles_.size(); ++i) {
-    // printf("%04f ", j.getPosition());
-    joint_handles_[i].setCommand(init_value[i] + 0.0001*i);
-  }
-  std::cout << std::endl;
+  // for (size_t i = 0; i < joint_handles_.size(); ++i) {
+  //   // printf("%04f ", j.getPosition());
+  //   joint_handles_[i].setCommand(init_value[i] + 0.0001*i);
+  // }
+  // std::cout << std::endl;
   // return;
 
   std::cout << "JointStates:";
@@ -84,7 +84,7 @@ void QrDriverTestController::update(const ros::Time&, const ros::Duration&) {
     if (0 == count++%3)
       printf("\n");
 
-    printf("%+04f ", j.getPosition());
+    printf("%s - %+04f ", j.getName().c_str(), j.getPosition());
   }
   std::cout << std::endl;
 
