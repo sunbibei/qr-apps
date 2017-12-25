@@ -5,12 +5,17 @@
  *      Author: silence
  */
 
+// #define CHECK_INST_
+#ifdef  CHECK_INST_
+#include <foundation/label.h>
+#endif
+
 #include <apps/ros_wrapper.h>
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-  // google::InitGoogleLogging("qr_driver");
-  // google::FlushLogFiles(google::GLOG_INFO);
+  google::InitGoogleLogging("qr_driver");
+  google::FlushLogFiles(google::GLOG_INFO);
 
   ros::init(argc, argv, "mii_qr");
   ros::NodeHandle nh("~");
@@ -26,8 +31,10 @@ int main(int argc, char* argv[]) {
   ros::waitForShutdown();
 
   RosWrapper::destroy_instance();
-  // Label::printfEveryInstance();
+#ifdef  CHECK_INST_
+  Label::printfEveryInstance();
+#endif
   LOG_INFO << "The shutdown of qr_driver has finished... ...";
-  // google::ShutdownGoogleLogging();
+  google::ShutdownGoogleLogging();
   return 0;
 }

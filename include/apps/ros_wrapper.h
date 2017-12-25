@@ -14,6 +14,8 @@
 #include <controller_manager/controller_manager.h>
 
 #include "system/robot/mii_robot.h"
+///! qr-next-control
+#include <mii_control.h>
 
 #define DEBUG_TOPIC
 #ifdef DEBUG_TOPIC
@@ -52,6 +54,8 @@ private:
   bool use_ros_control_;
   boost::shared_ptr<class RosRobotHW> hardware_interface_;
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
+
+  qr_control::MiiControl* mii_control_;
 };
 
 #endif /* INCLUDE_QR_ROS_WRAPPER_H_ */
