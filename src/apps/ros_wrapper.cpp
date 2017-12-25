@@ -5,14 +5,15 @@
  *      Author: silence
  */
 
-#include <apps/ros_robothw.h>
-#include <apps/ros_wrapper.h>
+#include "apps/ros_robothw.h"
+#include "apps/ros_wrapper.h"
+
 #include <repository/resource/joint_manager.h>
 #include <repository/resource/imu_sensor.h>
 #include <repository/resource/force_sensor.h>
 #include "foundation/auto_instanceor.h"
 #include "foundation/cfg_reader.h"
-#include "system/platform/thread/threadpool.h"
+#include "foundation/thread/threadpool.h"
 
 ///! qr-next-control
 #include <mii_control.h>
@@ -53,6 +54,8 @@ RosWrapper::~RosWrapper() {
   halt();
   // AutoInstanceor::destroy_instance();
   MiiCfgReader::destroy_instance();
+
+  mii_control_->destroy_instance();
   // LOG_DEBUG << "Leave the roswrapper deconstruction";
   // google::ShutdownGoogleLogging();
 }
@@ -113,14 +116,23 @@ bool RosWrapper::start() {
     }
     AutoInstanceor::instance()->add_library(str);
 
+    bool rl_trial = false;
+    if (ros::param::get("~rl_trial", rl_trial) && rl_trial) {
+      if (!ros::param::get("~rl_lib", str)) {
+        LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
+            << "in the parameter server. Did you forget define this parameter.";
+      }
+      AutoInstanceor::instance()->add_library(str);
+    }
+
     if (!ros::param::get("~gait_cfg", str)) {
       LOG_FATAL << "RosWapper can't find the 'gait_lib' parameter "
           << "in the parameter server. Did you forget define this parameter.";
     }
     MiiCfgReader::instance()->add_config(str);
 
-    if ((nullptr == qr_control::MiiControl::create_instance("ctrl"))
-        || !qr_control::MiiControl::instance()->init())
+    mii_control_ = qr_control::MiiControl::create_instance("ctrl");
+    if ((nullptr == mii_control_) || !mii_control_->init())
       LOG_FATAL << "Create the singleton 'MiiControl' has failed.";
 
     ThreadPool::instance()->add(MII_CTRL_THREAD, &qr_control::MiiControl::tick,
@@ -148,11 +160,13 @@ inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
   to.position.clear();
   to.velocity.clear();
   to.effort.clear();
+  to.name.clear();
   for (const auto& jnt : *from) {
     to.name.push_back(jnt->joint_name());
     to.position.push_back(jnt->joint_position());
     to.velocity.push_back(jnt->joint_velocity());
     to.effort.push_back(jnt->joint_torque());
+    to.name.push_back(jnt->joint_name());
   }
   to.header.stamp = ros::Time::now();
 }
@@ -197,7 +211,6 @@ void RosWrapper::publishRTMsg() {
   sensor_msgs::JointState   __jnt_msg;
   sensor_msgs::Imu          __imu_msg;
   std_msgs::Int32MultiArray __f_msg;
-  // getJointNames(__jnt_msg.name);
 
   __imu_msg.header.frame_id = "imu";
 

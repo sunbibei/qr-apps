@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   hardware_interface
   qr_driver
   qr_next_control
+  mii_foundation
 )
 
 # Declare a catkin package
@@ -83,7 +84,7 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-foreach(dir include launch config)
+foreach(dir examples/launch examples/config launch config)
   install(DIRECTORY ${dir}/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach(dir)
