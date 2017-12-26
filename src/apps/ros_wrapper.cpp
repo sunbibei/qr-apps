@@ -162,7 +162,6 @@ inline void __fill_jnt_data(sensor_msgs::JointState& to, JointManager* from) {
   to.effort.clear();
   to.name.clear();
   for (const auto& jnt : *from) {
-    to.name.push_back(jnt->joint_name());
     to.position.push_back(jnt->joint_position());
     to.velocity.push_back(jnt->joint_velocity());
     to.effort.push_back(jnt->joint_torque());
