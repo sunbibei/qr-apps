@@ -16,6 +16,7 @@
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging("qr_driver");
   google::FlushLogFiles(google::GLOG_INFO);
+  FLAGS_colorlogtostderr = true;
 
   ros::init(argc, argv, "mii_qr");
   ros::NodeHandle nh("~");
