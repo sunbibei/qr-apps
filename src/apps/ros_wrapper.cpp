@@ -39,11 +39,12 @@ RosWrapper* RosWrapper::create_instance(const MiiString& __tag) {
 
 RosWrapper::RosWrapper(const MiiString& __tag)
   : MiiRobot(Label::make_label(__tag, "robot")), root_tag_(__tag), alive_(true),
-    rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false) {
+    rt_duration_(1000/50), ros_ctrl_duration_(1000/100), use_ros_control_(false),
+    mii_control_(nullptr) {
   // LOG_DEBUG << "Enter the roswrapper construction";
   // google::InitGoogleLogging("qr_driver");
   // google::SetLogDestination(google::GLOG_INFO, "/path/to/log/INFO_");
-  FLAGS_colorlogtostderr = true;
+  // FLAGS_colorlogtostderr = true;
   // google::FlushLogFiles(google::GLOG_INFO);
   // LOG_DEBUG << "Leave the roswrapper construction";
   ; // Nothing to do here, all of variables initialize in the method @start()
