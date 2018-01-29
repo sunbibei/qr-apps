@@ -11,6 +11,8 @@
 #include <repository/resource/joint_manager.h>
 #include <repository/resource/imu_sensor.h>
 #include <repository/resource/force_sensor.h>
+#include "repository/registry.h"
+
 #include "foundation/auto_instanceor.h"
 #include "foundation/cfg_reader.h"
 #include "foundation/thread/threadpool.h"
@@ -201,6 +203,16 @@ inline void __fill_force_data(std_msgs::Int32MultiArray& to, MiiVector<ForceSens
   }
 }
 
+inline void __fill_cmd_data(std_msgs::Float64MultiArray& __cmd_msg, Eigen::VectorXd** cmds) {
+  __cmd_msg.data.clear();
+  for (const auto& l : {LegType::FL, LegType::FR, LegType::HL, LegType::HR}) {
+    const auto& cmd = *(cmds[l]);
+    for (const auto& j : {JntType::KNEE, JntType::HIP, JntType::YAW}) {
+      __cmd_msg.data.push_back(cmd(j));
+    }
+  }
+}
+
 void RosWrapper::publishRTMsg() {
   ros::Publisher jnt_puber
       = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
@@ -208,9 +220,13 @@ void RosWrapper::publishRTMsg() {
       = nh_.advertise<sensor_msgs::Imu>("imu", 1);
   ros::Publisher force_puber
       = nh_.advertise<std_msgs::Int32MultiArray>("foot_forces", 1);
-  sensor_msgs::JointState   __jnt_msg;
-  sensor_msgs::Imu          __imu_msg;
-  std_msgs::Int32MultiArray __f_msg;
+  ros::Publisher cmd_puber
+      = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
+
+  sensor_msgs::JointState     __jnt_msg;
+  sensor_msgs::Imu            __imu_msg;
+  std_msgs::Int32MultiArray   __f_msg;
+  std_msgs::Float64MultiArray __cmd_msg;
 
   __imu_msg.header.frame_id = "imu";
 
@@ -222,6 +238,16 @@ void RosWrapper::publishRTMsg() {
     dim.size  = 1;
     dim.stride= 1;
     __f_msg.layout.dim.push_back(dim);
+  }
+
+  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
+  auto cfg = MiiCfgReader::instance();
+  MiiVector<MiiString> cmds;
+  cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
+  FOR_EACH_LEG(l) {
+    LOG_ERROR << "label: ";
+    LOG_ERROR << "\t" << cmds[l];
+    _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
   }
 
   TIMER_INIT
@@ -238,6 +264,11 @@ void RosWrapper::publishRTMsg() {
     if (force_puber.getNumSubscribers()) {
       __fill_force_data(__f_msg, td_list_by_type_);
       force_puber.publish(__f_msg);
+    }
+
+    if (cmd_puber.getNumSubscribers()) {
+      __fill_cmd_data(__cmd_msg, _sub_cmd);
+      cmd_puber.publish(__cmd_msg);
     }
 
     TIMER_CONTROL(rt_duration_)
