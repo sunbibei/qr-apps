@@ -8,10 +8,15 @@
 #ifndef INCLUDE_QR_ROS_WRAPPER_H_
 #define INCLUDE_QR_ROS_WRAPPER_H_
 
-#include <chrono>
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Float64MultiArray.h>
+#include <realtime_tools/realtime_buffer.h>
+#include <realtime_tools/realtime_publisher.h>
 #include <controller_manager/controller_manager.h>
+
+#include <chrono>
+#include <boost/scoped_ptr.hpp>
 
 #include "system/robot/mii_robot.h"
 ///! qr-next-control

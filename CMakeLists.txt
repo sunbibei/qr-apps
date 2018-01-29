@@ -23,6 +23,8 @@ catkin_package(
     roscpp
 )
 
+find_package(Eigen3 REQUIRED)
+
 ###########
 ## Build ##
 ###########
@@ -31,6 +33,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 set(SRC_ROOT            src)
