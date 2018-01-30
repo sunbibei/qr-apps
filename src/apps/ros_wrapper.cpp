@@ -220,8 +220,10 @@ void RosWrapper::publishRTMsg() {
       = nh_.advertise<sensor_msgs::Imu>("imu", 1);
   ros::Publisher force_puber
       = nh_.advertise<std_msgs::Int32MultiArray>("foot_forces", 1);
-  // ros::Publisher cmd_puber
-  //     = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
+
+  ros::Publisher cmd_puber;
+  if (!use_ros_control_)
+    cmd_puber = nh_.advertise<std_msgs::Float64MultiArray>("/dragon/joint_commands", 10);
 
   sensor_msgs::JointState     __jnt_msg;
   sensor_msgs::Imu            __imu_msg;
@@ -240,15 +242,15 @@ void RosWrapper::publishRTMsg() {
     __f_msg.layout.dim.push_back(dim);
   }
 
-  // Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
-  // auto cfg = MiiCfgReader::instance();
-  // MiiVector<MiiString> cmds;
-  // cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
-  // FOR_EACH_LEG(l) {
-  //   LOG_ERROR << "label: ";
-  //   LOG_ERROR << "\t" << cmds[l];
-  //   _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
-  // }
+  Eigen::VectorXd* _sub_cmd[LegType::N_LEGS];
+  if (!use_ros_control_) {
+    auto cfg = MiiCfgReader::instance();
+    MiiVector<MiiString> cmds;
+    cfg->get_value(Label::make_label(root_tag_, "roswrapper"), "cmds", cmds);
+    FOR_EACH_LEG(l) {
+     _sub_cmd[l] = GET_COMMAND_NO_FLAG(cmds[l], Eigen::VectorXd*);
+    }
+  }
 
   TIMER_INIT
   while (alive_ && ros::ok()) {
@@ -266,10 +268,10 @@ void RosWrapper::publishRTMsg() {
       force_puber.publish(__f_msg);
     }
 
-    // if (cmd_puber.getNumSubscribers()) {
-    //   __fill_cmd_data(__cmd_msg, _sub_cmd);
-    //   cmd_puber.publish(__cmd_msg);
-    // }
+    if (!use_ros_control_ && cmd_puber.getNumSubscribers()) {
+      __fill_cmd_data(__cmd_msg, _sub_cmd);
+      cmd_puber.publish(__cmd_msg);
+    }
 
     TIMER_CONTROL(rt_duration_)
   }
